@@ -12,7 +12,7 @@ commonLabels:
 
 images:
   - name: ghcr.io/developer-friendly/echo-server
-    newName: latest # {"$imagepolicy": "default:echo-server:tag"}
+    newTag: latest # {"$imagepolicy": "default:echo-server:tag"}
 
 namespace: default
 
