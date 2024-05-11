@@ -1,7 +1,7 @@
 name: ci
 concurrency:
   cancel-in-progress: true
-  group: ci-${{ github.event_name }}-${{ github.base_ref || github.head_ref }}
+  group: ci-${{ github.event_name }}-${{ github.ref_name }}
 
 on:
   push:
@@ -87,7 +87,7 @@ jobs:
         with:
           command: cves
           ignore-unchanged: true
-          image: ${{ steps.meta.outputs.tags }}
+          image: ${{ env.REGISTRY }}/${{ env.GITHUB_REPOSITORY }}:${{ github.run_id }}
           only-fixed: true
           only-severities: medium,high,critical
           sarif-file: sarif.output.json
