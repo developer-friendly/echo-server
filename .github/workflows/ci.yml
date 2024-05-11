@@ -10,7 +10,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  REPOSITORY: ${{ env.REPOSITORY }}
+  GITHUB_REPOSITORY: ${{ github.repository }}
   DOCKER_REPOSITORY: developerfriendly/${{ github.event.repository.name }}
 
 permissions:
@@ -67,7 +67,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            ${{ env.REGISTRY }}/${{ env.REPOSITORY }}
+            ${{ env.REGISTRY }}/${{ env.GITHUB_REPOSITORY }}
           labels: |
             org.opencontainers.image.description: ${{ steps.readme.outputs.content }}
       - id: short-sha
@@ -82,7 +82,7 @@ jobs:
           push: ${{ github.ref == 'refs/heads/main' }}
           platforms: linux/amd64,linux/arm64
           tags: |
-            ${{ env.REGISTRY }}/${{ env.REPOSITORY }}:${{ steps.short-sha.outputs.short-sha }}
-            ${{ env.REGISTRY }}/${{ env.REPOSITORY }}:latest
+            ${{ env.REGISTRY }}/${{ env.GITHUB_REPOSITORY }}:${{ steps.short-sha.outputs.short-sha }}
+            ${{ env.REGISTRY }}/${{ env.GITHUB_REPOSITORY }}:latest
             ${{ env.DOCKER_REPOSITORY }}:${{ steps.short-sha.outputs.short-sha }}
             ${{ env.DOCKER_REPOSITORY }}:latest
