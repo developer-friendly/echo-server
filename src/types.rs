@@ -14,7 +14,7 @@ pub struct EchoInfo {
     body: Option<String>,
     query_params: HashMap<String, String>,
     cookies: HashMap<String, String>,
-    client_ip: String,
+    peer_addr: String,
 }
 
 impl EchoInfo {
@@ -24,7 +24,7 @@ impl EchoInfo {
         body: Option<String>,
         query_params: HashMap<String, String>,
         cookies: HashMap<String, String>,
-        client_ip: String,
+        peer_addr: String,
         server_hostname: String,
     ) -> Self {
         Self {
@@ -33,7 +33,7 @@ impl EchoInfo {
             body,
             query_params,
             cookies,
-            client_ip,
+            peer_addr,
             server_hostname,
             epoch: SystemTime::now()
                 .duration_since(UNIX_EPOCH)

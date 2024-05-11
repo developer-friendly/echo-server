@@ -34,17 +34,16 @@ async fn index(req: HttpRequest) -> web::Json<EchoInfo> {
         })
         .collect();
     tracing::debug!("Query params: {:?}", query_params);
-    let client_ip = req.connection_info().peer_addr().unwrap().to_string();
-    // get server ip from the request
+    let peer_addr = req.connection_info().realip_remote_addr().unwrap().into();
     let server_hostname = req.connection_info().host().to_string();
 
     let echo = EchoInfo::new(
-        req.uri().to_string(),
+        req.path().into(),
         headers,
         None,
         query_params,
         cookies,
-        client_ip,
+        peer_addr,
         server_hostname,
     );
 
