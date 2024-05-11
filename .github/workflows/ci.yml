@@ -44,12 +44,8 @@ jobs:
             const { promises: fs } = require('fs')
 
             const main = async () => {
-              const path = core.getInput('path')
-              const trim = core.getBooleanInput('trim')
+              const path = 'README.md'
               let content = await fs.readFile(path, 'utf8')
-              if (trim) {
-                content = content.trim()
-              }
 
               core.setOutput('content', content)
             }
