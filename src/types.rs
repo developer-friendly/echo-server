@@ -1,5 +1,5 @@
 use hostname::get;
-use serde::{Serialize};
+use serde::Serialize;
 use std::collections::HashMap;
 use std::time::{SystemTime, UNIX_EPOCH};
 
