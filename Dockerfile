@@ -1,4 +1,4 @@
-FROM rust:1-alpine as build
+FROM rust:1 as build
 WORKDIR /app
 COPY . /app
 RUN cargo build --release
