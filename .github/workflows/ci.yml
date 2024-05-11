@@ -70,7 +70,7 @@ jobs:
         run: |
           echo "short-sha=$(echo ${{ github.sha }} | cut -c 1-7 )" >> $GITHUB_OUTPUT
       - name: Build and push Docker image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         with:
           context: .
           labels: ${{ steps.meta.outputs.labels }}
@@ -81,6 +81,20 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.GITHUB_REPOSITORY }}:latest
             ${{ env.DOCKER_REPOSITORY }}:${{ steps.short-sha.outputs.short-sha }}
             ${{ env.DOCKER_REPOSITORY }}:latest
+      - name: Docker Scout - cves
+        uses: docker/scout-action@v1
+        with:
+          command: cves
+          ignore-unchanged: true
+          image: ${{ steps.meta.outputs.tags }}
+          only-fixed: true
+          only-severities: medium,high,critical
+          sarif-file: sarif.output.json
+          summary: true
+      - name: Upload SARIF to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: sarif.output.json
 
   trivy:
     runs-on: ubuntu-latest
