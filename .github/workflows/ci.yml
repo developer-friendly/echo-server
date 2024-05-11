@@ -15,10 +15,13 @@ env:
 
 permissions:
   contents: read
-  packages: write
 
 jobs:
   build-docker:
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo

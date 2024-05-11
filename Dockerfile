@@ -1,6 +1,6 @@
 FROM rust:1 as build
 WORKDIR /app
-COPY . /app
+COPY . .
 RUN cargo build --release
 
 FROM gcr.io/distroless/cc-debian12
