@@ -4,7 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-axum = "0.7.5"
+actix-web = "4.5.1"
+chrono = "0.4.38"
+hostname = "0.4.0"
 serde = { version = "1.0.201", features = ["derive"] }
 tokio = { version = "1.37.0", features = ["rt-multi-thread", "num_cpus", "macros"] }
 tracing = "0.1.40"
