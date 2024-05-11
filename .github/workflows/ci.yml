@@ -78,6 +78,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           tags: |
             ${{ env.REGISTRY }}/${{ env.GITHUB_REPOSITORY }}:${{ steps.short-sha.outputs.short-sha }}
+            ${{ env.REGISTRY }}/${{ env.GITHUB_REPOSITORY }}:${{ github.run_id }}
             ${{ env.REGISTRY }}/${{ env.GITHUB_REPOSITORY }}:latest
             ${{ env.DOCKER_REPOSITORY }}:${{ steps.short-sha.outputs.short-sha }}
             ${{ env.DOCKER_REPOSITORY }}:latest
