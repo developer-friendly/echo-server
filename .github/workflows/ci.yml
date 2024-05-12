@@ -66,8 +66,6 @@ jobs:
         with:
           images: |
             ${{ env.REGISTRY }}/${{ env.GITHUB_REPOSITORY }}
-          labels: |
-            org.opencontainers.image.description=${{ steps.readme.outputs.content }}
       - id: short-sha
         name: Set image tag
         run: |
@@ -76,7 +74,9 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          labels: ${{ steps.meta.outputs.labels }}
+          labels: |
+            ${{ steps.meta.outputs.labels }}
+            org.opencontainers.image.description=${{ steps.readme.outputs.content }}
           push: ${{ github.ref == 'refs/heads/main' }}
           platforms: linux/amd64,linux/arm64
           tags: |
