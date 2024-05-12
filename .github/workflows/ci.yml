@@ -74,9 +74,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          labels: |
-            ${{ steps.meta.outputs.labels }}
-            org.opencontainers.image.description=${{ steps.readme.outputs.content }}
+          labels: ${{ steps.meta.outputs.labels }}
           push: ${{ github.ref == 'refs/heads/main' }}
           platforms: linux/amd64,linux/arm64
           tags: |
