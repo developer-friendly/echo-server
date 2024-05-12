@@ -6,16 +6,12 @@ resources:
   - imagepolicy.yml
   - imageupdateautomation.yml
   - httproute.yml
-
 commonLabels:
   env: dev
-
 images:
   - name: ghcr.io/developer-friendly/echo-server
-    newTag: latest # {"$imagepolicy": "default:echo-server:tag"}
-
+    newTag: "9044139623" # {"$imagepolicy": "default:echo-server:tag"}
 namespace: default
-
 patches:
   - patch: |
       - op: replace
