@@ -4,5 +4,6 @@ COPY . .
 RUN cargo build --release
 
 FROM gcr.io/distroless/cc-debian12
+EXPOSE 3000
 COPY --from=build /app/target/release/echo-server /
 ENTRYPOINT ["/echo-server"]
