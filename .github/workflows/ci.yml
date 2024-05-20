@@ -95,7 +95,7 @@ jobs:
           context: .
           labels: ${{ steps.meta.outputs.labels }}
           push: true
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           tags: |
             ${{ env.REGISTRY }}/${{ env.GITHUB_REPOSITORY }}:${{ steps.short-sha.outputs.short-sha }}
             ${{ env.REGISTRY }}/${{ env.GITHUB_REPOSITORY }}:${{ github.run_id }}
