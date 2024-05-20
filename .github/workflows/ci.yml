@@ -7,6 +7,9 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 env:
   REGISTRY: ghcr.io
@@ -21,6 +24,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      pull_request: write
       security-events: write
     runs-on: ubuntu-latest
     steps:
@@ -70,12 +74,13 @@ jobs:
         name: Set image tag
         run: |
           echo "short-sha=$(echo ${{ github.sha }} | cut -c 1-7 )" >> $GITHUB_OUTPUT
-      - name: Build and push Docker image
+      - if: github.ref == 'refs/heads/main'
+        name: Build and push Docker image - main
         uses: docker/build-push-action@v5
         with:
           context: .
           labels: ${{ steps.meta.outputs.labels }}
-          push: ${{ github.ref == 'refs/heads/main' }}
+          push: true
           platforms: linux/amd64,linux/arm64
           tags: |
             ${{ env.REGISTRY }}/${{ env.GITHUB_REPOSITORY }}:${{ steps.short-sha.outputs.short-sha }}
@@ -97,6 +102,27 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: sarif.output.json
+      - if: github.event_name == 'pull_request'
+        name: Build and push Docker image - pull request
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          labels: ${{ steps.meta.outputs.labels }}
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.GITHUB_REPOSITORY }}:${{ steps.short-sha.outputs.short-sha }}
+            ${{ env.REGISTRY }}/${{ env.GITHUB_REPOSITORY }}:${{ github.run_id }}
+      - if: github.event_name == 'pull_request'
+        name: Docker Scout - compare
+        uses: docker/scout-action@v1
+        with:
+          command: compare
+          image: ${{ env.REGISTRY }}/${{ env.GITHUB_REPOSITORY }}:${{ github.run_id }}
+          to: ${{ env.REGISTRY }}/${{ env.GITHUB_REPOSITORY }}:latest
+          ignore-unchanged: true
+          exit-code: true
+          only-fixed: true
 
   trivy:
     runs-on: ubuntu-latest
