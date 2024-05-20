@@ -88,10 +88,6 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.GITHUB_REPOSITORY }}:latest
             ${{ env.DOCKER_REPOSITORY }}:${{ steps.short-sha.outputs.short-sha }}
             ${{ env.DOCKER_REPOSITORY }}:latest
-      - name: Upload SARIF to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: sarif.output.json
       - if: github.event_name == 'pull_request'
         name: Build and push Docker image - pull request
         uses: docker/build-push-action@v5
@@ -113,6 +109,10 @@ jobs:
           only-severities: medium,high,critical
           sarif-file: sarif.output.json
           summary: true
+      - name: Upload SARIF to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: sarif.output.json
       - if: github.event_name == 'pull_request'
         name: Docker Scout - compare
         uses: docker/scout-action@v1
