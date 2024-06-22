@@ -241,6 +241,8 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - name: Run cargo-upgrade
         uses: meysam81/cargo-upgrade-action@main
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
   trivy:
     runs-on: ubuntu-latest
