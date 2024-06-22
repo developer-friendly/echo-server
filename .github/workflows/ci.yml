@@ -202,7 +202,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           tags: |
             ${{ env.REGISTRY }}/${{ env.GITHUB_REPOSITORY }}:${{ github.ref_name }}
-            ${{ env.GITHUB_REPOSITORY }}:${{ github.ref_name }}
+            ${{ env.DOCKER_REPOSITORY }}:${{ github.ref_name }}
 
   github-release:
     if: github.event_name == 'push' && github.ref == 'refs/tags/v*'
