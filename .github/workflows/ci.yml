@@ -138,7 +138,7 @@ jobs:
           only-fixed: true
 
   release-docker:
-    if: github.event_name == 'push' && github.ref == 'refs/tags/v*'
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     permissions:
       contents: read
       packages: write
@@ -205,7 +205,7 @@ jobs:
             ${{ env.DOCKER_REPOSITORY }}:${{ github.ref_name }}
 
   github-release:
-    if: github.event_name == 'push' && github.ref == 'refs/tags/v*'
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     permissions:
       contents: write
     runs-on: ubuntu-latest
