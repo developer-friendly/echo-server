@@ -18,3 +18,7 @@ vendor:
 
 serve:
   cargo watch -w src -s sh -- sh -c "clear; cargo run --frozen"
+
+test:
+  clear
+  cargo t --frozen

@@ -1,11 +1,19 @@
-use actix_web::{get, web, App, HttpRequest, HttpServer};
+use actix_web::dev::{ConnectionInfo, PeerAddr};
+use actix_web::http::Method;
+use actix_web::{web, App, HttpRequest, HttpServer};
 
 mod types;
-use types::EchoInfo;
+use types::{ClientAddr, EchoInfo, ServerAddr};
 
-#[get("/")]
-async fn index(req: HttpRequest) -> web::Json<EchoInfo> {
+async fn index(
+    req: HttpRequest,
+    peer: PeerAddr,
+    method: Method,
+    conn_info: ConnectionInfo,
+) -> web::Json<EchoInfo> {
     tracing::debug!("Received request: {:?}", req);
+    let client: ClientAddr =
+        ClientAddr::new(peer.into_inner().ip().to_string(), peer.into_inner().port());
     let headers = req
         .headers()
         .iter()
@@ -22,7 +30,7 @@ async fn index(req: HttpRequest) -> web::Json<EchoInfo> {
         })
         .collect();
     tracing::debug!("Cookies: {:?}", cookies);
-    let query_params = req
+    let params = req
         .query_string()
         .split('&')
         .filter_map(|param| {
@@ -33,18 +41,20 @@ async fn index(req: HttpRequest) -> web::Json<EchoInfo> {
             }
         })
         .collect();
-    tracing::debug!("Query params: {:?}", query_params);
-    let peer_addr = req.connection_info().realip_remote_addr().unwrap().into();
-    let server_hostname = req.connection_info().host().to_string();
+    tracing::debug!("Query params: {:?}", params);
+    let server = ServerAddr::new(
+        conn_info.host().to_string(),
+        conn_info.scheme().to_string().to_uppercase(),
+    );
 
     let echo = EchoInfo::new(
-        req.path().into(),
+        req.path().to_string(),
         headers,
-        None,
-        query_params,
+        params,
         cookies,
-        peer_addr,
-        server_hostname,
+        client,
+        server,
+        method.to_string(),
     );
 
     tracing::info!("Echo: {:?}", echo);
@@ -57,7 +67,7 @@ async fn main() -> std::io::Result<()> {
 
     tracing::info!("Starting server at 0.0.0.0:3000");
 
-    HttpServer::new(|| App::new().service(index))
+    HttpServer::new(|| App::new().service(web::resource("{tail}*").to(index)))
         .bind(("0.0.0.0", 3000))?
         .run()
         .await
