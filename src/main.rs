@@ -5,6 +5,8 @@ use actix_web::{web, App, HttpRequest, HttpServer};
 mod types;
 use types::{ClientAddr, EchoInfo, ServerAddr};
 
+use std::env;
+
 async fn index(
     req: HttpRequest,
     peer: PeerAddr,
@@ -63,12 +65,20 @@ async fn index(
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
+    let host = env::var("HOST").unwrap_or_else(|_| "0.0.0.0".to_string());
+    let port: u32 = env::var("PORT")
+        .unwrap_or_else(|_| "8000".to_string())
+        .parse()
+        .unwrap();
+
+    let addr = format!("{}:{}", host, port);
+
     tracing_subscriber::fmt::init();
 
-    tracing::info!("Starting server at 0.0.0.0:3000");
+    tracing::info!("Starting server at http://{}", addr);
 
     HttpServer::new(|| App::new().service(web::resource("{tail}*").to(index)))
-        .bind(("0.0.0.0", 3000))?
+        .bind(addr)?
         .run()
         .await
 }
