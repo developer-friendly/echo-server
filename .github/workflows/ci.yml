@@ -242,6 +242,7 @@ jobs:
       - name: Run cargo-upgrade
         uses: meysam81/cargo-upgrade-action@main
         with:
+          extra-flags: -i allow
           token: ${{ secrets.GITHUB_TOKEN }}
 
   trivy:
