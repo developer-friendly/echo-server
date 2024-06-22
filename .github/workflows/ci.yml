@@ -223,7 +223,7 @@ jobs:
             --generate-notes
 
   cargo-upgrade:
-    if: github.event_name == 'schedule'
+    if: github.event_name == 'schedule' || ( github.event_name == 'push' && github.ref == 'refs/heads/main' )
     runs-on: ubuntu-latest
     permissions:
       contents: read
