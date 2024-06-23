@@ -86,7 +86,7 @@ jobs:
           labels: |
             org.opencontainers.image.description=${{ steps.readme.outputs.content }}
       - name: debug
-        run: echo ${{ fromJson(steps.meta.outputs.json).tags[0] }}
+        run: echo ${{ fromJson(steps.meta.outputs.bake-file-tags).target.args.DOCKER_META_VERSION }}
       - id: short-sha
         name: Set image tag
         run: |
