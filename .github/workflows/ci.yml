@@ -406,9 +406,7 @@ jobs:
         with:
           title: "# Preview Deployment"
           content: >-
-            <a href="https://${{ env.PR_NUMBER }}.test.developer-friendly.blog" target="_blank">
-              https://${{ env.PR_NUMBER }}.test.developer-friendly.blog
-            </a>
+            <https://${{ env.PR_NUMBER }}.test.developer-friendly.blog>
           token: ${{ secrets.GITHUB_TOKEN }}
 
   teardown-preview:
