@@ -385,6 +385,7 @@ jobs:
             spec:
               force: false
               interval: 5m
+              nameSuffix: -${PR_NUMBER}
               path: ./echo-server/overlays/test
               postBuild:
                 substitute:
