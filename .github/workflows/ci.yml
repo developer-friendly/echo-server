@@ -386,7 +386,7 @@ jobs:
               force: false
               interval: 5m
               nameSuffix: -pr${PR_NUMBER}
-              path: ./echo-server/overlays/test
+              path: ./applications/echo-server/overlays/test
               postBuild:
                 substitute:
                   IMAGE_TAG: "${IMAGE_TAG}"
@@ -398,13 +398,8 @@ jobs:
               targetNamespace: default
               wait: true
           EOF
-      - name: Prepare applying the manifest
-        run: |
-          cat << 'EOF' >> entrypoint.sh
-            kubectl apply -f manifest.yml
-          EOF
-      - name: Apply the entrypoint
-        run: bash -eux entrypoint.sh
+      - name: Apply the stack
+        run: kubectl apply -f manifest.yml
       - name: Comment PR
         uses: meysam81/comment-pr@v1
         with:
@@ -414,3 +409,29 @@ jobs:
               https://pr${PR_NUMBER}.test.developer-friendly.blog
             </a>
           token: ${{ secrets.GITHUB_TOKEN }}
+
+  teardown-preview:
+    runs-on: self-hosted
+    if: |
+      (
+        github.event_name == 'pull_request' &&
+        github.event.action == 'closed'
+      ) || (
+        github.event_name == 'pull_request' &&
+        github.event.action == 'unlabeled' &&
+        ! contains(github.event.pull_request.labels.*.name, 'deploy-preview'
+      )
+    env:
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Delete the stack
+        run: kubectl delete kustomization echo-server-${PR_NUMBER} -n flux-system
+      - name: Comment PR
+        uses: meysam81/comment-pr@v1
+        with:
+          title: "# Preview Deployment"
+          content: ""
+          token: ${{ secrets.GITHUB_TOKEN }}
+          state: absent
