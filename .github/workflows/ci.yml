@@ -385,11 +385,11 @@ jobs:
             spec:
               force: false
               interval: 5m
-              nameSuffix: -${PR_NUMBER}
+              nameSuffix: -pr${PR_NUMBER}
               path: ./echo-server/overlays/test
               postBuild:
                 substitute:
-                  IMAGE_TAG: ${IMAGE_TAG}
+                  IMAGE_TAG: "${IMAGE_TAG}"
                   PR_NUMBER: pr${PR_NUMBER}
               prune: true
               sourceRef:
