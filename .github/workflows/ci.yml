@@ -361,6 +361,7 @@ jobs:
           cache-to: type=gha,mode=max
           labels: ${{ steps.meta.outputs.labels }}
           push: true
+          platforms: linux/amd64,linux/arm64
           tags: |
             ${{ steps.meta.outputs.tags }}
             ${{ env.IMAGE_REPOSITORY }}:${{ github.run_id }}
