@@ -369,7 +369,7 @@ jobs:
     runs-on: self-hosted
     needs: build-preview
     env:
-      PR_NUMBER: ${{ github.event.pull_request.number }}
+      PR_NUMBER: pr${{ github.event.pull_request.number }}
       IMAGE_TAG: ${{ github.run_id }}
     permissions:
       pull-requests: write
@@ -385,12 +385,12 @@ jobs:
             spec:
               force: false
               interval: 5m
-              nameSuffix: -pr${{ env.PR_NUMBER }}
+              nameSuffix: -${{ env.PR_NUMBER }}
               path: ./applications/echo-server/overlays/test
               postBuild:
                 substitute:
                   IMAGE_TAG: "${{ env.IMAGE_TAG }}"
-                  PR_NUMBER: pr${{ env.PR_NUMBER }}
+                  PR_NUMBER: ${{ env.PR_NUMBER }}
               prune: true
               sourceRef:
                 kind: GitRepository
@@ -405,8 +405,8 @@ jobs:
         with:
           title: "# Preview Deployment"
           content: >-
-            <a href="https://pr${{ env.PR_NUMBER }}.test.developer-friendly.blog" target="_blank">
-              https://pr${{ env.PR_NUMBER }}.test.developer-friendly.blog
+            <a href="https://${{ env.PR_NUMBER }}.test.developer-friendly.blog" target="_blank">
+              https://${{ env.PR_NUMBER }}.test.developer-friendly.blog
             </a>
           token: ${{ secrets.GITHUB_TOKEN }}
 
