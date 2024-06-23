@@ -329,8 +329,6 @@ jobs:
       github.event_name == 'pull_request' &&
       github.event.pull_request.state == 'open' &&
       contains(github.event.pull_request.labels.*.name, 'deploy-preview')
-    outputs:
-      image-tag: ${{ steps.meta.outputs.version }}
     env:
       IMAGE_REPOSITORY: ghcr.io/${{ github.repository }}
     permissions:
@@ -363,14 +361,16 @@ jobs:
           cache-to: type=gha,mode=max
           labels: ${{ steps.meta.outputs.labels }}
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: |
+            ${{ steps.meta.outputs.tags }}
+            ${{ env.IMAGE_REPOSITORY }}:${{ github.run_id }}
 
   deploy-preview:
     runs-on: self-hosted
     needs: build-preview
     env:
       PR_NUMBER: ${{ github.event.pull_request.number }}
-      IMAGE_TAG: ${{ needs.build-preview.outputs.image-tag }}
+      IMAGE_TAG: ${{ github.run_id }}
     permissions:
       pull-requests: write
     steps:
