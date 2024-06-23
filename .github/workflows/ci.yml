@@ -390,7 +390,7 @@ jobs:
               postBuild:
                 substitute:
                   IMAGE_TAG: ${IMAGE_TAG}
-                  PR_NUMBER: ${PR_NUMBER}
+                  PR_NUMBER: pr${PR_NUMBER}
               prune: true
               sourceRef:
                 kind: GitRepository
