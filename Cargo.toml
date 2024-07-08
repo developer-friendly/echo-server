@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 actix-web = "4.8.0"
 chrono = "0.4.38"
-serde = { version = "1.0.203", features = ["derive"] }
+serde = { version = "1.0.204", features = ["derive"] }
 tokio = { version = "1.38.0", features = ["rt-multi-thread", "num_cpus", "macros"] }
 tracing = "0.1.40"
 tracing-subscriber = "0.3.18"
