@@ -13,7 +13,7 @@ on:
     branches:
       - main
   schedule:
-    - cron: '30 1 * * *'
+    - cron: "30 1 * * *"
 
 env:
   REGISTRY: ghcr.io
@@ -24,12 +24,28 @@ permissions:
   contents: read
 
 jobs:
-  build-docker:
+  build-docker-edge:
     if: |
       (
         github.event_name == 'push' &&
         github.ref == 'refs/heads/main'
-      ) ||
+      )
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build docker
+        uses: meysam81/build-docker@v1
+        with:
+          image-name: ghcr.io/${{ github.repository }}
+          image-extra-tags: ghcr.io/${{ github.repository }}:${{ github.run_id }}
+          kubescape: true
+          kubescape-upload-sarif: true
+
+  build-docker-pr:
+    if: |
       (
         github.event_name == 'pull_request'
       )
@@ -37,234 +53,31 @@ jobs:
       contents: read
       packages: write
       pull-requests: write
-      security-events: write
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-      - name: Set up QEMU needed for Docker
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
+      - name: Build docker
+        uses: meysam81/build-docker@v1
         with:
-          password: ${{ secrets.GITHUB_TOKEN }}
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-      - id: readme
-        name: Read README
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            'use strict'
+          image-name: ghcr.io/${{ github.repository }}
+          kubescape: true
 
-            const { promises: fs } = require('fs')
-
-            async function main() {
-              const path = 'README.md'
-              var content = await fs.readFile(path, 'utf8')
-              content = content.replace(/\n/g, ' ')
-
-              core.setOutput('content', content)
-            }
-
-            main().catch(err => core.setFailed(err.message))
-      - name: Login to Docker hub
-        uses: docker/login-action@v3
-        with:
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
-          registry: docker.io
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-      - id: meta
-        name: Docker metadata
-        uses: docker/metadata-action@v5
-        with:
-          images: |
-            ${{ env.REGISTRY }}/${{ env.GITHUB_REPOSITORY }}
-          labels: |
-            org.opencontainers.image.description=${{ steps.readme.outputs.content }}
-      - id: short-sha
-        name: Set image tag
-        run: |
-          echo "short-sha=$(echo ${{ github.sha }} | cut -c 1-7 )" >> $GITHUB_OUTPUT
-      - if: github.ref == 'refs/heads/main'
-        name: Build and push Docker image - main
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          labels: ${{ steps.meta.outputs.labels }}
-          push: true
-          platforms: linux/amd64,linux/arm64
-          tags: |
-            ${{ env.REGISTRY }}/${{ env.GITHUB_REPOSITORY }}:${{ steps.short-sha.outputs.short-sha }}
-            ${{ env.REGISTRY }}/${{ env.GITHUB_REPOSITORY }}:${{ github.run_id }}
-            ${{ env.REGISTRY }}/${{ env.GITHUB_REPOSITORY }}:latest
-            ${{ env.DOCKER_REPOSITORY }}:${{ steps.short-sha.outputs.short-sha }}
-            ${{ env.DOCKER_REPOSITORY }}:latest
-      - if: github.event_name == 'pull_request'
-        name: Build and push Docker image - pull request
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          labels: ${{ steps.meta.outputs.labels }}
-          push: true
-          platforms: linux/amd64
-          tags: |
-            ${{ env.REGISTRY }}/${{ env.GITHUB_REPOSITORY }}:${{ steps.short-sha.outputs.short-sha }}
-            ${{ env.REGISTRY }}/${{ env.GITHUB_REPOSITORY }}:${{ github.run_id }}
-      - name: Docker Scout - cves
-        uses: docker/scout-action@v1
-        with:
-          command: cves
-          ignore-unchanged: true
-          image: ${{ env.REGISTRY }}/${{ env.GITHUB_REPOSITORY }}:${{ github.run_id }}
-          only-fixed: true
-          only-severities: medium,high,critical
-          sarif-file: sarif.output.json
-          summary: true
-      - name: Upload SARIF to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: sarif.output.json
-      - if: github.event_name == 'pull_request'
-        name: Docker Scout - compare
-        uses: docker/scout-action@v1
-        with:
-          command: compare
-          image: ${{ env.REGISTRY }}/${{ env.GITHUB_REPOSITORY }}:${{ github.run_id }}
-          to: ${{ env.REGISTRY }}/${{ env.GITHUB_REPOSITORY }}:latest
-          ignore-unchanged: true
-          exit-code: true
-          only-fixed: true
-
-  release-docker:
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+  build-docker-stable:
+    if: |
+      (
+        github.event_name == 'push' &&
+        startsWith(github.ref, 'refs/tags/v')
+      )
     permissions:
       contents: read
       packages: write
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-      - name: Set up QEMU needed for Docker
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
+      - name: Build docker
+        uses: meysam81/build-docker@v1
         with:
-          password: ${{ secrets.GITHUB_TOKEN }}
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-      - id: readme
-        name: Read README
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            'use strict'
-
-            const { promises: fs } = require('fs')
-
-            async function main() {
-              const path = 'README.md'
-              var content = await fs.readFile(path, 'utf8')
-              content = content.replace(/\n/g, ' ')
-
-              core.setOutput('content', content)
-            }
-
-            main().catch(err => core.setFailed(err.message))
-      - name: Login to Docker hub
-        uses: docker/login-action@v3
-        with:
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
-          registry: docker.io
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-      - id: meta
-        name: Docker metadata
-        uses: docker/metadata-action@v5
-        with:
-          images: |
-            ${{ env.REGISTRY }}/${{ env.GITHUB_REPOSITORY }}
-          labels: |
-            org.opencontainers.image.description=${{ steps.readme.outputs.content }}
-      - id: short-sha
-        name: Set image tag
-        run: |
-          echo "short-sha=$(echo ${{ github.sha }} | cut -c 1-7 )" >> $GITHUB_OUTPUT
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          labels: ${{ steps.meta.outputs.labels }}
-          push: true
-          platforms: linux/amd64,linux/arm64
-          tags: |
-            ${{ env.REGISTRY }}/${{ env.GITHUB_REPOSITORY }}:${{ github.ref_name }}
-            ${{ env.DOCKER_REPOSITORY }}:${{ github.ref_name }}
-
-  github-release:
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-    permissions:
-      contents: write
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-      - name: Create release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release create ${{ github.ref_name }} \
-            --title ${{ github.ref_name }} \
-            --generate-notes
-
-  cargo-upgrade:
-    if: github.event_name == 'schedule' || ( github.event_name == 'push' && github.ref == 'refs/heads/main' )
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      - name: Run cargo-upgrade
-        uses: meysam81/cargo-upgrade-action@main
-        with:
-          extra-flags: -i allow
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-  trivy:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      security-events: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Trivy scan
-        uses: aquasecurity/trivy-action@master
-        with:
-          format: template
-          scan-type: fs
-          template: "@/contrib/sarif.tpl"
-          output: trivy-results.sarif
-          severity: CRITICAL,HIGH,MEDIUM
-      - name: Upload to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: trivy-results.sarif
+          image-name: ghcr.io/${{ github.repository }}
+          image-extra-tags: ghcr.io/${{ github.repository }}:${{ github.ref_name }}
+          kubescape: true
 
   clippy:
     runs-on: ubuntu-latest
@@ -298,8 +111,10 @@ jobs:
       - name: Run rust-fmt
         run: cargo fmt --all --check
 
-  build:
+  build-binary:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -311,5 +126,32 @@ jobs:
             ~/.cargo/git
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
       - name: Run build
         run: cargo build --release --all-features
+      - name: Prepare artifacts
+        run: |
+          cp target/release/echo-server echo-server-${{ github.ref_name }}
+          sha256sum echo-server-${{ github.ref_name }} > echo-server-${{ github.ref_name }}.sha256
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: echo-server-${{ github.ref_name }}
+          path: |
+            echo-server-${{ github.ref_name }}
+            echo-server-${{ github.ref_name }}.sha256
+      - name: Create GitHub release
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create ${{ github.ref_name }} \
+            --title ${{ github.ref_name }} \
+            --generate-notes
+      - name: Upload assets to GitHub release
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload ${{ github.ref_name }} echo-server-${{ github.ref_name }} echo-server-${{ github.ref_name }}.sha256
