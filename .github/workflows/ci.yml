@@ -39,10 +39,17 @@ jobs:
       - name: Build docker
         uses: meysam81/build-docker@v1
         with:
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
+          dockerhub-password: ${{ secrets.DOCKERHUB_PASSWORD }}
           image-name: ghcr.io/${{ github.repository }}
-          image-extra-tags: ghcr.io/${{ github.repository }}:${{ github.run_id }}
+          image-extra-tags: |
+            ghcr.io/${{ github.repository }}:${{ github.run_id }}
+            ghcr.io/${{ github.repository }}:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}:${{ github.run_id }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}:latest
           kubescape: true
           kubescape-upload-sarif: true
+          scout-cves: true
 
   build-docker-stable:
     if: |
@@ -58,8 +65,12 @@ jobs:
       - name: Build docker
         uses: meysam81/build-docker@v1
         with:
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
+          dockerhub-password: ${{ secrets.DOCKERHUB_PASSWORD }}
           image-name: ghcr.io/${{ github.repository }}
-          image-extra-tags: ghcr.io/${{ github.repository }}:${{ github.ref_name }}
+          image-extra-tags: |
+            ghcr.io/${{ github.repository }}:${{ github.ref_name }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}:${{ github.ref_name }}
           kubescape: true
 
   clippy:
