@@ -1,5 +1,6 @@
-Docker*
-.docker*
-.pre-commit*
-.git*
-Justfile
+*
+!.cargo/
+!target/
+!src/
+!Cargo.toml
+!Cargo.lock

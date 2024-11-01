@@ -45,8 +45,8 @@ jobs:
           image-extra-tags: |
             ghcr.io/${{ github.repository }}:${{ github.run_id }}
             ghcr.io/${{ github.repository }}:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}:${{ github.run_id }}
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}:latest
+            developerfriendly/${{ github.event.repository.name }}:${{ github.run_id }}
+            developerfriendly/${{ github.event.repository.name }}:latest
           kubescape: true
           kubescape-upload-sarif: true
           scout-cves: true
@@ -70,7 +70,7 @@ jobs:
           image-name: ghcr.io/${{ github.repository }}
           image-extra-tags: |
             ghcr.io/${{ github.repository }}:${{ github.ref_name }}
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}:${{ github.ref_name }}
+            developerfriendly/${{ github.event.repository.name }}:${{ github.ref_name }}
           kubescape: true
 
   clippy:
